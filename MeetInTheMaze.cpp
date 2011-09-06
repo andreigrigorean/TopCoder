@@ -17,7 +17,7 @@ using namespace std;
 
 typedef long long int64;
 
-#define FORIT(it, v) for (typeof(v.begin()) it = v.begin(); it != v.end(); ++it)
+#define FORIT(it, v) for (typeof((v).begin()) it = (v).begin(); it != (v).end(); ++it)
 #define x first
 #define y second
 
@@ -134,16 +134,15 @@ public:
         FORIT(itF, F)
           FORIT(itR, R)
             cost += expectedCost(*itF, *itR);
-      }
-      catch (exception& e) {
+      } catch (exception) {
         return "";
       }
       int64 d = gcd(cost, possib);
       cost /= d; possib /= d;
 
-      ostringstream oss;
-      oss << cost << '/' << possib;
-      return oss.str();
+      ostringstream out;
+      out << cost << '/' << possib;
+      return out.str();
     }
 };
 
