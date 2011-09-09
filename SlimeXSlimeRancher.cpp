@@ -25,20 +25,20 @@ int64 dp[MAX_N][MAX_N][MAX_N];
 
 class SlimeXSlimeRancher {
 public:
-    class Elem {
+    class SortedVal {
       public:
         int value;
         int initPos;
 
-        Elem(int _value, int _initPos) : value(_value), initPos(_initPos) {}
+        SortedVal(int _value, int _initPos) : value(_value), initPos(_initPos) {}
     
-        bool operator<(const Elem& other) const {
+        bool operator<(const SortedVal& other) const {
           return value < other.value;
         }
     };
 
     vector<int> slimes[3];
-    vector<Elem> elems[3];
+    vector<SortedVal> sortedVals[3];
 
     vector<int> parse(vector<string>& v) {
       string tmp;
@@ -55,27 +55,26 @@ public:
       return numbers;
     }
 
-    vector<Elem> buildElems(vector<int> slime) {
-      vector<Elem> elems;
+    vector<SortedVal> buildSortedVals(vector<int> slime) {
+      vector<SortedVal> sortedVals;
       for (int i = 0; i < (int)slime.size(); ++i)
-        elems.push_back(Elem(slime[i], i));
-      sort(elems.begin(), elems.end());
-      return elems;
+        sortedVals.push_back(SortedVal(slime[i], i));
+      sort(sortedVals.begin(), sortedVals.end());
+      return sortedVals;
     }
 
     bool isInside(int i, int j, int k, int index) {
-      if (!i || !j || !k) return false;
       return 
-          elems[0][i - 1].value >= slimes[0][index] &&
-          elems[1][j - 1].value >= slimes[1][index] &&
-          elems[2][k - 1].value >= slimes[2][index];
+          sortedVals[0][i].value >= slimes[0][index] &&
+          sortedVals[1][j].value >= slimes[1][index] &&
+          sortedVals[2][k].value >= slimes[2][index];
     }
 
     int64 manhattan(int i, int j, int k, int index) {
       return
-          (int64)(elems[0][i - 1].value - slimes[0][index]) +
-          (int64)(elems[1][j - 1].value - slimes[1][index]) +
-          (int64)(elems[2][k - 1].value - slimes[2][index]);
+          (int64)(sortedVals[0][i].value - slimes[0][index]) +
+          (int64)(sortedVals[1][j].value - slimes[1][index]) +
+          (int64)(sortedVals[2][k].value - slimes[2][index]);
     }
 
     int64 train(vector<string> first_slime, vector<string> second_slime, vector<string> third_slime) {
@@ -83,44 +82,44 @@ public:
       slimes[1] = parse(second_slime);
       slimes[2] = parse(third_slime);
 
-      elems[0] = buildElems(slimes[0]);
-      elems[1] = buildElems(slimes[1]);
-      elems[2] = buildElems(slimes[2]);
+      sortedVals[0] = buildSortedVals(slimes[0]);
+      sortedVals[1] = buildSortedVals(slimes[1]);
+      sortedVals[2] = buildSortedVals(slimes[2]);
 
       int N = slimes[0].size();
 
       memset(dp, INF, sizeof(dp));
-      dp[1][1][1] = 0;
+      dp[0][0][0] = 0;
 
-      for (int i = 1; i <= N; ++i)
-        for (int j = 1; j <= N; ++j)
-          for (int k = 1; k <= N; ++k) {
+      for (int i = 0; i < N; ++i)
+        for (int j = 0; j < N; ++j)
+          for (int k = 0; k < N; ++k) {
             // move to (i + 1, j, k)
-            if (i + 1 <= N) {
-              if (isInside(i + 1, j, k, elems[0][i].initPos))
-                dp[i + 1][j][k] = min(dp[i + 1][j][k], dp[i][j][k] + manhattan(i + 1, j, k, elems[0][i].initPos));
+            if (i + 1 < N) {
+              if (isInside(i + 1, j, k, sortedVals[0][i + 1].initPos))
+                dp[i + 1][j][k] = min(dp[i + 1][j][k], dp[i][j][k] + manhattan(i + 1, j, k, sortedVals[0][i + 1].initPos));
               else
                 dp[i + 1][j][k] = min(dp[i + 1][j][k], dp[i][j][k]);
             }
 
             // move to (i, j + 1, k)
-            if (j + 1 <= N) {
-              if (isInside(i, j + 1, k, elems[1][j].initPos))
-                dp[i][j + 1][k] = min(dp[i][j + 1][k], dp[i][j][k] + manhattan(i, j + 1, k, elems[1][j].initPos));
+            if (j + 1 < N) {
+              if (isInside(i, j + 1, k, sortedVals[1][j + 1].initPos))
+                dp[i][j + 1][k] = min(dp[i][j + 1][k], dp[i][j][k] + manhattan(i, j + 1, k, sortedVals[1][j + 1].initPos));
               else
                 dp[i][j + 1][k] = min(dp[i][j + 1][k], dp[i][j][k]);
             }
 
             // move to (i, j, k + 1)
-            if (k + 1 <= N) {
-              if (isInside(i, j, k + 1, elems[2][k].initPos))
-                dp[i][j][k + 1] = min(dp[i][j][k + 1], dp[i][j][k] + manhattan(i, j, k + 1, elems[2][k].initPos));
+            if (k + 1 < N) {
+              if (isInside(i, j, k + 1, sortedVals[2][k + 1].initPos))
+                dp[i][j][k + 1] = min(dp[i][j][k + 1], dp[i][j][k] + manhattan(i, j, k + 1, sortedVals[2][k + 1].initPos));
               else
                 dp[i][j][k + 1] = min(dp[i][j][k + 1], dp[i][j][k]);
             }
           }
 
-      return dp[N][N][N];
+      return dp[N - 1][N - 1][N - 1];
     }
 };
 

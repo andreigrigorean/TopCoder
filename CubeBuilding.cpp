@@ -1,3 +1,5 @@
+// SRM 507, Level 3
+
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -59,14 +61,14 @@ public:
                 (colorRow[good][i - good] + singleRow[i][N][k] * comb[i - k][good - k]) % MOD;
 
       // buildings[i][j][k] - number of nice buildings with:
-      // i columns
+      // i rows
       // j "good" cubes
       // k "bad" cubes
       buildings[0][0][0] = 1;
       for (int i = 0; i < N; ++i)
         for (int j = 0; j <= M; ++j)
           for (int k = 0; j + k <= M; ++k)
-            if (buildings[i][j][k]) {
+            if (buildings[i][j][k] > 0) {
               for (int newJ = 0; newJ + j + k <= M; ++newJ)
                 for (int newK = 0; newK + newJ + j + k <= M; ++newK)
                   buildings[i + 1][j + newJ][k + newK] =
