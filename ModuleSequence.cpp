@@ -19,7 +19,7 @@ class ModuleSequence {
 public:
     int64 K, N;
 
-    int64 count(int len, int upper) {
+    int64 count(int64 len, int64 upper) {
         if (len < 0 || upper < 0) return 0;
 
         int64 sq_root = max(10LL, (int64)sqrt(len));
