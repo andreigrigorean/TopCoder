@@ -16,10 +16,7 @@ typedef long long int64;
 
 const int MAX_N = 21;
 const int SIGMA = 21;
-
-char alphabet[21] = {'A', 'B', 'C', 'D', 'E', 'F', 'Z', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'};
-int ord[26] = {};
-
+const char alphabet[] = {'A', 'B', 'C', 'D', 'E', 'F', 'Z', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X'};
 const int dx[] = {-1, 0, 1, 0};
 const int dy[] = {0, 1, 0, -1};
 
@@ -29,15 +26,11 @@ int bit_count[1 << MAX_N];
 class AlphabetPaths {
 public:
     int n, m;
-    vector<string> A;
+    vector< vector<int> > A;
     vector<int> paths;
  
-    inline int get_ord(char ch) {
-        return ord[ch - 'A'];
-    }
-
     inline bool valid_pos(int i, int j) {
-        return (0 <= i && i < n && 0 <= j && j < m);
+        return (0 <= i && i < n && 0 <= j && j < m && A[i][j] != -1);
     }
 
     void back(int i, int j, int mask) {
@@ -49,8 +42,8 @@ public:
         for (int k = 0; k < 4; ++k) {
             int ii = i + dx[k];
             int jj = j + dy[k];
-            if (valid_pos(ii, jj) && A[ii][jj] != '.' && ((mask & (1 << get_ord(A[ii][jj]))) == 0))
-                back(ii, jj, mask | (1 << get_ord(A[ii][jj])));
+            if (valid_pos(ii, jj) && ((mask & (1 << A[ii][jj])) == 0))
+                back(ii, jj, mask | (1 << A[ii][jj]));
         }
     }
 
@@ -58,31 +51,38 @@ public:
         return ((1 << SIGMA) - 1) ^ mask ^ (1 << start);
     }
 
+    inline int get_ord(char ch) {
+        for (int i = 0; i < SIGMA; ++i)
+            if (alphabet[i] == ch)
+                return i;
+        return -1;
+    }
+
     long long count(vector<string> _A) {
-       // preproc alphabet
-       for (int i = 0; i < SIGMA; ++i)
-            ord[alphabet[i] - 'A'] = i;
        for (int i = 0; i < (1 << (SIGMA - 1)); ++i) {
            bit_count[2 * i] = bit_count[i];
            bit_count[2 * i + 1] = bit_count[i] + 1;
        }
 
-        A = _A;
-        n = A.size();
-        m = A[0].size();
+        n = _A.size();
+        m = _A[0].size();
+        A = vector< vector<int> >(n, vector<int>(m));
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < m; ++j)
+                A[i][j] = get_ord(_A[i][j]);
 
         int64 sol = 0;
         for (int i = 0; i < n; ++i)
             for (int j = 0; j < m; ++j) {
-                if (A[i][j] == '.') continue;
+                if (A[i][j] == -1) continue;
                 paths.clear();
-                back(i, j, 1 << get_ord(A[i][j]));
+                back(i, j, 1 << A[i][j]);
                 FORIT(it, paths) {
-                    sol += (int64)freq[*it] * freq[complement(*it, get_ord(A[i][j]))];
+                    sol += (int64)freq[*it] * freq[complement(*it, A[i][j])];
                     freq[*it] = 0;
                 }
             }
-        return sol * 2;
+        return 2 * sol;
     }
 };
 
